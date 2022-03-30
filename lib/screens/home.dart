@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:note/helpers/dbHelper.dart';
+import 'package:note/models/noteModel.dart';
 import 'package:note/screens/addNote.dart';
 import 'package:note/screens/update.dart';
 
@@ -13,17 +14,18 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   DBHelper db = DBHelper();
 
-  Future<List<Map<String, dynamic>>> getNotes() async {
+  Future<List> getNotes() async {
     try {
       await db.initDatabase();
       List<Map> notesList = await db.getAllNotes();
       await db.closeDatabase();
       List<Map<String, dynamic>> notes =
           List<Map<String, dynamic>>.from(notesList);
-      return notes;
+      List items = await NoteModel.fromListOfMap(notes);
+      return items;
     } catch (e) {
       print(e);
-      return [{}];
+      return [];
     }
   }
 
@@ -63,8 +65,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisCount: 2),
                 itemCount: noteItems.data.length,
                 itemBuilder: (BuildContext context, int index) {
-                  dynamic reverse = List.from(noteItems.data.reversed);
-                  dynamic? note = reverse[index];
                   return Padding(
                     padding: const EdgeInsets.all(10),
                     child: Card(
@@ -72,7 +72,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(15)),
                       child: ListTile(
                         title: Text(
-                          note['title'] ?? '',
+                          noteItems.data[index].title ?? '',
                           overflow: TextOverflow.fade,
                           style: const TextStyle(
                             fontSize: 18,
@@ -82,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         subtitle: Padding(
                           padding: const EdgeInsets.fromLTRB(0, 5, 0, 30),
                           child: Text(
-                            note['content'] ?? '',
+                            noteItems.data[index].content ?? '',
                             overflow: TextOverflow.fade,
                             style: const TextStyle(
                               fontSize: 16,
@@ -90,10 +90,11 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         onTap: () {
+                          print(noteItems.data[index].id);
                           Navigator.of(context)
                               .push(MaterialPageRoute(
-                                  builder: (context) =>
-                                      UpdateScreen(id: note['id'])))
+                                  builder: (context) => UpdateScreen(
+                                      id: noteItems.data[index].id)))
                               .then((value) => setState(() {}));
                         },
                         onLongPress: () {
@@ -109,7 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         color: Colors.red,
                                       ),
                                       onPressed: () {
-                                        deleteNote(note['id'])
+                                        deleteNote(noteItems.data[index].id)
                                             .then((value) => setState((() {})));
                                         Navigator.pop(context, true);
                                       },

@@ -23,9 +23,10 @@ class _UpdateScreenState extends State<UpdateScreen> {
 
   Future<Map<String, dynamic>> getNote(int id) async {
     await db.initDatabase();
-    Map<String, dynamic>? note = await db.getNotes(id);
-    _titleController.text = note!['title'];
-    _descriptionController.text = note['content'];
+    Map<String, dynamic> note = await db.getNotes(id);
+    final noteData = await NoteModel.fromMap(note);
+    _titleController.text = noteData.title!;
+    _descriptionController.text = noteData.content!;
     return note;
   }
 
@@ -56,7 +57,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
           future: getNote(widget.id!),
           builder: (context, noteItems) {
             if (noteItems.hasData) {
-              return body(noteItems);
+              return body();
             } else if (noteItems.hasError) {
               return const Center(child: Text('Error reading database'));
             } else {
@@ -68,7 +69,7 @@ class _UpdateScreenState extends State<UpdateScreen> {
     );
   }
 
-  Widget body(note) {
+  Widget body() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: Column(

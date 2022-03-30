@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:note/helpers/dbHelper.dart';
 import 'package:note/models/noteModel.dart';
-import 'package:note/screens/home.dart';
 
 class AddNoteScreen extends StatefulWidget {
   const AddNoteScreen({Key? key}) : super(key: key);
@@ -83,7 +82,18 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                   controller: _descriptionController,
                   maxLines: null,
                   textCapitalization: TextCapitalization.sentences,
-                  decoration: null,
+                  decoration: const InputDecoration(
+                    border: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    hintText: 'Content',
+                    hintStyle: TextStyle(
+                      fontSize: 19,
+                      height: 1.5,
+                    ),
+                  ),
                   style: const TextStyle(
                     fontSize: 19,
                     height: 1.5,

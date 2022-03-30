@@ -37,14 +37,14 @@ class DBHelper {
     return await database!.query(tableName);
   }
 
-  Future<Map<String, dynamic>?> getNotes(int id) async {
+  Future<Map<String, dynamic>> getNotes(int id) async {
     var result =
         await database!.query(tableName, where: 'id = ?', whereArgs: [id]);
 
     if (result.isNotEmpty) {
       return result.first;
     }
-    return null;
+    return {};
   }
 
   Future<int> deleteNote(int id) async {
