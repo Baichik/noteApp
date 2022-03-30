@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:note/helpers/dbHelper.dart';
 import 'package:note/models/noteModel.dart';
+import 'package:note/provider/home_provider.dart';
+import 'package:provider/provider.dart';
 
 class UpdateScreen extends StatefulWidget {
-  final int? id;
-  const UpdateScreen({Key? key, this.id}) : super(key: key);
+  final Map myMap;
+  const UpdateScreen({Key? key, required this.myMap}) : super(key: key);
 
   @override
   State<UpdateScreen> createState() => _UpdateScreenState();
@@ -13,62 +15,40 @@ class UpdateScreen extends StatefulWidget {
 class _UpdateScreenState extends State<UpdateScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  DBHelper db = DBHelper();
 
-  Future<void> updateNote(NoteModel note) async {
-    await db.initDatabase();
-    await db.updateNote(note);
-    await db.closeDatabase();
-  }
-
-  Future<Map<String, dynamic>> getNote(int id) async {
-    await db.initDatabase();
-    Map<String, dynamic>? note = await db.getNotes(id);
-    _titleController.text = note!['title'];
-    _descriptionController.text = note['content'];
-    return note;
-  }
-
-  void onTapChek() async {
-    NoteModel newNote = NoteModel(
-        _titleController.text, _descriptionController.text,
-        id: widget.id);
-    try {
-      await updateNote(newNote);
-    } catch (e) {
-      print(e);
-    } finally {
-      Navigator.of(context).pop();
-    }
+  @override
+  void initState() {
+    _titleController.text = widget.myMap['title'];
+    _descriptionController.text = widget.myMap['content'];
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final homeProvider = context.read<HomeProvider>();
     return Scaffold(
-      appBar: AppBar(actions: [
-        IconButton(
+      appBar: AppBar(
+        actions: [
+          IconButton(
             onPressed: () {
-              onTapChek();
-            },
-            icon: const Icon(Icons.check)),
-      ]),
-      body: FutureBuilder(
-          future: getNote(widget.id!),
-          builder: (context, noteItems) {
-            if (noteItems.hasData) {
-              return body(noteItems);
-            } else if (noteItems.hasError) {
-              return const Center(child: Text('Error reading database'));
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
+              final int id = widget.myMap['id'];
+              final NoteModel note = NoteModel(
+                _titleController.text,
+                _descriptionController.text,
+                id: id,
               );
-            }
-          }),
+              homeProvider.updateNote(note);
+              Navigator.of(context).pop();
+            },
+            icon: const Icon(Icons.check),
+          ),
+        ],
+      ),
+      body: body(),
     );
   }
 
-  Widget body(note) {
+  Widget body() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
       child: Column(

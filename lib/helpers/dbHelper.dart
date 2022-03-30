@@ -34,6 +34,7 @@ class DBHelper {
   }
 
   Future<List<Map<String, dynamic>>> getAllNotes() async {
+    await initDatabase();
     return await database!.query(tableName);
   }
 

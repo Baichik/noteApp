@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:note/helpers/dbHelper.dart';
 import 'package:note/models/noteModel.dart';
+import 'package:note/provider/home_provider.dart';
 import 'package:note/screens/home.dart';
+import 'package:provider/provider.dart';
 
 class AddNoteScreen extends StatefulWidget {
   const AddNoteScreen({Key? key}) : super(key: key);
@@ -14,24 +16,18 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  Future<void> _insertNote(NoteModel note) async {
-    DBHelper db = DBHelper();
-    await db.initDatabase();
-    await db.insertNote(note);
-    await db.closeDatabase();
-  }
-
   void onTapChek() async {
+    final homeProvider = context.read<HomeProvider>();
     if (_titleController.text.isEmpty) {
       if (_descriptionController.text.isEmpty) {
         Navigator.of(context).pop();
         return;
       }
     }
-    NoteModel newNote = NoteModel(
+    final NoteModel note = NoteModel(
         _titleController.text.trim(), _descriptionController.text.trim());
     try {
-      await _insertNote(newNote);
+      homeProvider.insertNote(note);
     } catch (e) {
       print(e);
     } finally {
