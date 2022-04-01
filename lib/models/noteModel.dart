@@ -1,5 +1,3 @@
-import 'package:note/helpers/dbHelper.dart';
-
 class NoteModel {
   int? id;
   String? title;
@@ -18,16 +16,13 @@ class NoteModel {
   }
 
   static Future<List> fromListOfMap(List<Map<String, dynamic>> notes) async {
-    List items = notes
-        .map((value) =>
-            NoteModel(value['title'], value['content'], id: value['id']))
-        .toList();
+    List items = notes.map(NoteModel.fromMap).toList();
     return items;
   }
 
-  static Future<NoteModel> fromMap(Map<String, dynamic> notes) async {
-    NoteModel items =
-        NoteModel(notes['title'], notes['content'], id: notes['id']);
-    return items;
-  }
+  factory NoteModel.fromMap(Map<String, dynamic> notes) => NoteModel(
+        notes['title'],
+        notes['content'],
+        id: notes['id'],
+      );
 }

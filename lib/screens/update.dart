@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:note/helpers/dbHelper.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:note/blocs/home_bloc.dart';
 import 'package:note/models/noteModel.dart';
 
 class UpdateScreen extends StatefulWidget {
-  final int? id;
-  const UpdateScreen({Key? key, this.id}) : super(key: key);
+  final NoteModel noteModel;
+  const UpdateScreen({Key? key, required this.noteModel}) : super(key: key);
 
   @override
   State<UpdateScreen> createState() => _UpdateScreenState();
@@ -13,59 +14,33 @@ class UpdateScreen extends StatefulWidget {
 class _UpdateScreenState extends State<UpdateScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
-  DBHelper db = DBHelper();
+  late HomeBloc _homeBloc;
 
-  Future<void> updateNote(NoteModel note) async {
-    await db.initDatabase();
-    await db.updateNote(note);
-    await db.closeDatabase();
-  }
-
-  Future<Map<String, dynamic>> getNote(int id) async {
-    await db.initDatabase();
-    Map<String, dynamic> note = await db.getNotes(id);
-    final noteData = await NoteModel.fromMap(note);
-    _titleController.text = noteData.title!;
-    _descriptionController.text = noteData.content!;
-    return note;
+  @override
+  void initState() {
+    _homeBloc = BlocProvider.of(context);
+    _titleController.text = widget.noteModel.title ?? "";
+    _descriptionController.text = widget.noteModel.content ?? "";
+    super.initState();
   }
 
   void onTapChek() async {
     NoteModel newNote = NoteModel(
-        _titleController.text, _descriptionController.text,
-        id: widget.id);
-    try {
-      await updateNote(newNote);
-    } catch (e) {
-      print(e);
-    } finally {
-      Navigator.of(context).pop();
-    }
+      _titleController.text,
+      _descriptionController.text,
+      id: widget.noteModel.id,
+    );
+    _homeBloc.add(UpdateHomeEvent(newNote));
+    Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(actions: [
-        IconButton(
-            onPressed: () {
-              onTapChek();
-            },
-            icon: const Icon(Icons.check)),
+        IconButton(onPressed: onTapChek, icon: const Icon(Icons.check)),
       ]),
-      body: FutureBuilder(
-          future: getNote(widget.id!),
-          builder: (context, noteItems) {
-            if (noteItems.hasData) {
-              return body();
-            } else if (noteItems.hasError) {
-              return const Center(child: Text('Error reading database'));
-            } else {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
-            }
-          }),
+      body: body(),
     );
   }
 

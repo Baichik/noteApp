@@ -20,11 +20,13 @@ class DBHelper {
   }
 
   Future<int> insertNote(NoteModel note) async {
+    await initDatabase();
     return await database!.insert(tableName, note.toMap(),
         conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   Future<int> updateNote(NoteModel note) async {
+    await initDatabase();
     return await database!.update(
       tableName,
       note.toMap(),
@@ -33,25 +35,31 @@ class DBHelper {
     );
   }
 
-  Future<List<Map<String, dynamic>>> getAllNotes() async {
-    return await database!.query(tableName);
+  Future<List<NoteModel>> getAllNotes() async {
+    await initDatabase();
+    final data = await database!.query(tableName);
+    if (data.isEmpty) return [];
+    return data.map(NoteModel.fromMap).toList();
   }
 
-  Future<Map<String, dynamic>> getNotes(int id) async {
+  Future<NoteModel?> getNotes(int id) async {
+    await initDatabase();
     var result =
         await database!.query(tableName, where: 'id = ?', whereArgs: [id]);
 
     if (result.isNotEmpty) {
-      return result.first;
+      return NoteModel.fromMap(result.first);
     }
-    return {};
+    return null;
   }
 
   Future<int> deleteNote(int id) async {
+    await initDatabase();
     return await database!.delete(tableName, where: 'id = ?', whereArgs: [id]);
   }
 
   closeDatabase() async {
+    await initDatabase();
     await database!.close();
   }
 }

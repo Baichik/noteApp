@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:note/helpers/dbHelper.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:note/blocs/home_bloc.dart';
 import 'package:note/models/noteModel.dart';
 
 class AddNoteScreen extends StatefulWidget {
@@ -13,29 +14,16 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   final _titleController = TextEditingController();
   final _descriptionController = TextEditingController();
 
-  Future<void> _insertNote(NoteModel note) async {
-    DBHelper db = DBHelper();
-    await db.initDatabase();
-    await db.insertNote(note);
-    await db.closeDatabase();
-  }
-
   void onTapChek() async {
     if (_titleController.text.isEmpty) {
       if (_descriptionController.text.isEmpty) {
-        Navigator.of(context).pop();
         return;
       }
     }
     NoteModel newNote = NoteModel(
         _titleController.text.trim(), _descriptionController.text.trim());
-    try {
-      await _insertNote(newNote);
-    } catch (e) {
-      print(e);
-    } finally {
-      Navigator.of(context).pop();
-    }
+    BlocProvider.of<HomeBloc>(context).add(AddHomeEvent(newNote));
+    Navigator.of(context).pop();
   }
 
   @override
